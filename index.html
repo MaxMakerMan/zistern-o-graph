@@ -2,15 +2,12 @@
 <html lang="de" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
-  <title>Zistern-O-Graph 1.0</title>
+  <title>Zistern-O-Graph 1.1</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1"></script>
   <style>
-    :root{
-      --bg:#0b1220; --card:#141b2d; --ink:#e5e7eb; --muted:#9ca3af; --brand:#38bdf8; --accent:#22c55e; --danger:#ef4444; --ring:#1f2937; --canvas:#0f172a;
-      --border:#22304a;
-    }
+    :root{ --bg:#0b1220; --card:#141b2d; --ink:#e5e7eb; --muted:#9ca3af; --brand:#38bdf8; --accent:#22c55e; --danger:#ef4444; --ring:#1f2937; --canvas:#0f172a; --border:#22304a; }
     *{box-sizing:border-box}
     html,body{height:100%}
     body{margin:0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial; color:var(--ink); background:var(--bg);}    
@@ -30,7 +27,6 @@
     .btn:hover{border-color:#3b82f6}
     .piewrap{margin-top:10px; background:#0c1424; border:1px solid var(--border); border-radius:10px; padding:8px}
 
-    /* Right: charts fill viewport */
     .charts{display:flex; flex-direction:column; height:100%;}
     .tabs{display:flex; gap:8px; padding:8px 10px; border-bottom:1px solid var(--border)}
     .tab{padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:700; font-size:13px; color:var(--ink); background:#0c1424; border:1px solid var(--border)}
@@ -40,7 +36,6 @@
     .view-inner{display:grid; grid-template-columns: 1fr; gap:12px; padding:12px; width:100%; height:100%}
     .canvas-wrap{background:var(--canvas); border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.35); padding:8px; height:100%; border:1px solid var(--border)}
     .canvas-wrap canvas{height:100% !important; width:100% !important}
-    .optview .canvas-wrap{padding:8px}
     .hint{color:var(--muted); font-size:12px}
     .small{font-size:12px; color:var(--muted)}
     table{width:100%; border-collapse:collapse; font-size:12px}
@@ -49,16 +44,16 @@
     th:first-child, td:first-child{text-align:left}
     .error{color:#fecaca; background:#7f1d1d; border:1px solid #991b1b; padding:8px; border-radius:8px; margin-top:8px}
 
-    /* Fancy tooltips */
+    /* Tooltips */
     .tip{position:relative; display:inline-flex; align-items:center; gap:6px}
     .tip .info{width:16px; height:16px; border-radius:999px; display:inline-grid; place-items:center; font-size:11px; color:#93c5fd; border:1px solid #1d4ed8}
-    .tip .bubble{position:absolute; left:0; top:100%; transform:translateY(8px); min-width:240px; max-width:340px; padding:10px; background:#020617; color:#e5e7eb; border:1px solid #1f2937; border-radius:10px; box-shadow:0 8px 28px rgba(0,0,0,.45); opacity:0; visibility:hidden; transition:.15s; z-index:10}
+    .tip .bubble{position:absolute; left:0; top:100%; transform:translateY(8px); min-width:240px; max-width:360px; padding:10px; background:#020617; color:#e5e7eb; border:1px solid #1f2937; border-radius:10px; box-shadow:0 8px 28px rgba(0,0,0,.45); opacity:0; visibility:hidden; transition:.15s; z-index:10}
     .tip:hover .bubble{opacity:1; visibility:visible}
     .inline{display:flex; align-items:center; justify-content:space-between; gap:8px}
   </style>
 </head>
 <body>
-  <header class="card"><h1>Zistern-O-Graph 1.0</h1></header>
+  <header class="card"><h1>Zistern-O-Graph 1.1</h1></header>
   <div class="app">
     <aside class="card panel controls">
       <div class="row">
@@ -118,7 +113,7 @@
         <div>
           <label class="tip">Temperaturbasierte Bewässerung
             <span class="info">i</span>
-            <span class="bubble">Tagesbedarf W wird aus Tmax berechnet: ≥30°C→5, 25–29→3, 20–24→2 L/m². April/Sept nur wenn warm genug.</span>
+            <span class="bubble">W (L/m²) wird aus Tmax berechnet: ≥30°C→5, 25–29→3, 20–24→2. <b>April & September:</b> Bewässern nur, wenn Tmax ≥ Schwelle unten. <b>Mai–August:</b> Bewässern nach W (ohne Schwelle). <b>Okt–März:</b> nie.</span>
           </label>
           <div class="hint">W ≥30°C: 5 | 25–29: 3 | 20–24: 2</div>
         </div>
@@ -150,9 +145,9 @@
 
       <div class="row3">
         <div>
-          <label class="tip">April/Sept ab (°C)
+          <label class="tip">April/Sept Schwelle (°C)
             <span class="info">i</span>
-            <span class="bubble">In April & September wird nur bewässert, wenn Tmax ≥ Schwelle.</span>
+            <span class="bubble">Nur im <b>April</b> und <b>September</b> gilt diese Mindest-Temperatur (Tmax), damit überhaupt bewässert wird. Beispiel: 25°C → An kühlen Apr/Sep-Tagen wird nicht bewässert.</span>
           </label>
           <input type="number" id="aprilSeptMin" value="25" step="0.1" />
         </div>
@@ -166,7 +161,7 @@
         <div>
           <label class="tip">eff. Regen Cap (mm)
             <span class="info">i</span>
-            <span class="bubble">Max. anrechenbarer Regen je Tag (z.B. 10 mm).</span>
+            <span class="bubble">Max. anrechenbarer Regen je Tag (z. B. 10 mm). Überschuss versickert tiefer/läuft ab.</span>
           </label>
           <input type="number" id="effCap" value="10" step="0.1" />
         </div>
@@ -176,14 +171,14 @@
         <div>
           <label class="tip">Startdatum
             <span class="info">i</span>
-            <span class="bubble">Wird automatisch mit CSV-Start gefüllt.</span>
+            <span class="bubble">Wird automatisch mit CSV-/Demo-Start gefüllt. Danach kannst du einschränken.</span>
           </label>
           <input type="date" id="startDate" />
         </div>
         <div>
           <label class="tip">Enddatum
             <span class="info">i</span>
-            <span class="bubble">Wird automatisch mit CSV-Ende gefüllt.</span>
+            <span class="bubble">Wird automatisch mit CSV-/Demo-Ende gefüllt.</span>
           </label>
           <input type="date" id="endDate" />
         </div>
@@ -191,14 +186,14 @@
 
       <label class="tip">CSV-Datei (time, station, rr, tlmax)
         <span class="info">i</span>
-        <span class="bubble">rr = Niederschlag der letzten 24h in mm (−1 bedeutet kein Regen). tlmax = Tageshöchsttemperatur.</span>
+        <span class="bubble">rr = Niederschlag 24h (mm, −1 = kein Regen). tlmax = Tageshöchsttemperatur (°C). Trenne mit Kommas, ISO-Datum in <code>time</code>.</span>
       </label>
       <input type="file" id="csvFile" />
 
       <div class="results" id="results">
         <h4>Ergebnisse</h4>
         <div id="errorBox" class="error" style="display:none"></div>
-        <div id="resultsText">Bitte CSV laden. Änderungen aktualisieren die Simulation automatisch.</div>
+        <div id="resultsText">Wird automatisch berechnet. Du kannst auch eine eigene CSV laden.</div>
         <div id="breakdown" style="margin-top:8px"></div>
         <div class="piewrap"><canvas id="pieChart" height="200"></canvas></div>
         <div class="actions">
@@ -219,8 +214,8 @@
           <div class="canvas-wrap"><canvas id="cisternChart"></canvas></div>
         </div>
       </div>
-      <div class="view optview" id="view2">
-        <div class="view-inner" style="grid-template-columns: 1fr;">
+      <div class="view" id="view2">
+        <div class="view-inner">
           <div class="canvas-wrap"><canvas id="optChart"></canvas></div>
         </div>
       </div>
@@ -237,37 +232,24 @@ let levelChart, pieChart, optChart;
 let loadedRows = null;
 let lastSim = null; // for export
 
-// Colors for dark mode charts
 const gridColor = 'rgba(148, 163, 184, 0.2)';
 const axisColor = '#9ca3af';
 
 function saveState(){
   const ids = ['cisternVolume','roofArea','roofType','runoffCoeff','houseConsumption','gardenArea','W30','W25','W20','aprilSeptMin','effLoss','effCap','startDate','endDate'];
-  const state = {};
-  ids.forEach(id=>{ const el=document.getElementById(id); if(!el) return; state[id]=el.value; });
+  const state = {}; ids.forEach(id=>{ const el=document.getElementById(id); if(!el) return; state[id]=el.value; });
   localStorage.setItem('zisternograph_state', JSON.stringify(state));
 }
 function loadState(){
-  try{ const s = JSON.parse(localStorage.getItem('zisternograph_state')||'{}');
-    Object.keys(s).forEach(k=>{ const el=document.getElementById(k); if(el) el.value = s[k]; });
-  }catch(e){}
+  try{ const s = JSON.parse(localStorage.getItem('zisternograph_state')||'{}'); Object.keys(s).forEach(k=>{ const el=document.getElementById(k); if(el) el.value = s[k]; }); }catch(e){}
 }
 
 function getRunoffCoeff(key){
   const input = document.getElementById('runoffCoeff');
-  switch(key){
-    case 'flat': return 0.95;
-    case 'gravel': return 0.70;
-    case 'green_ext': return 0.40;
-    case 'green_int': return 0.20;
-    case 'custom': return parseFloat(input.value)||0.95;
-    default: return 0.95;
-  }
+  switch(key){ case 'flat': return 0.95; case 'gravel': return 0.70; case 'green_ext': return 0.40; case 'green_int': return 0.20; case 'custom': return parseFloat(input.value)||0.95; default: return 0.95; }
 }
-// toggle custom input enable
 (function(){
-  const sel = document.getElementById('roofType');
-  const coeff = document.getElementById('runoffCoeff');
+  const sel = document.getElementById('roofType'); const coeff = document.getElementById('runoffCoeff');
   const setState = ()=>{ if(sel.value==='custom'){ coeff.disabled=false; } else { coeff.disabled=true; coeff.value=getRunoffCoeff(sel.value).toFixed(2);} saveState(); };
   sel.addEventListener('change', setState); setState();
 })();
@@ -276,21 +258,10 @@ function parseCSV(content){
   if (content.charCodeAt(0) === 0xFEFF) content = content.slice(1);
   const lines = content.trim().split(/\r?\n/);
   const header = lines.shift().split(',').map(s=>s.trim());
-  const ti = header.indexOf('time');
-  const ri = header.indexOf('rr');
-  const tmi = header.indexOf('tlmax');
+  const ti = header.indexOf('time'); const ri = header.indexOf('rr'); const tmi = header.indexOf('tlmax');
   if(ti===-1||ri===-1) throw new Error('CSV benötigt Spalten: time, rr. Optional: tlmax');
-  const data=[];
-  for(const raw of lines){
-    const line = raw.trim(); if(!line) continue;
-    const cols=line.split(',');
-    const t=new Date(cols[ti]); if (isNaN(t)) continue;
-    let rr=parseFloat(cols[ri]); if(isNaN(rr)||rr<0) rr=0;
-    const tmax = (tmi!==-1)? parseFloat(cols[tmi]) : NaN;
-    data.push({time:t, rr, tmax});
-  }
-  data.sort((a,b)=>a.time-b.time);
-  return data;
+  const data=[]; for(const raw of lines){ const line = raw.trim(); if(!line) continue; const cols=line.split(','); const t=new Date(cols[ti]); if (isNaN(t)) continue; let rr=parseFloat(cols[ri]); if(isNaN(rr)||rr<0) rr=0; const tmax = (tmi!==-1)? parseFloat(cols[tmi]) : NaN; data.push({time:t, rr, tmax}); }
+  data.sort((a,b)=>a.time-b.time); return data;
 }
 
 function isIrrigationSeason(d){ const m=d.getMonth()+1; return m>=4 && m<=9; }
@@ -305,15 +276,12 @@ function simulate({ cisternVolume, roofArea, roofCoeff, houseConsumption, garden
 
   for(let i=0;i<rows.length;i++){
     const r=rows[i];
-    const inflow = r.rr * roofArea * roofCoeff; level += inflow; totalInflow += inflow;
-    if(level>cisternVolume){ overflow += (level - cisternVolume); level = cisternVolume; }
+    const inflow = r.rr * roofArea * roofCoeff; level += inflow; totalInflow += inflow; if(level>cisternVolume){ overflow += (level - cisternVolume); level = cisternVolume; }
 
-    // Hausverbrauch
     houseDemand += houseConsumption; totalDemand += houseConsumption;
     if(level>=houseConsumption){ level -= houseConsumption; rainSupplied += houseConsumption; houseRain += houseConsumption; mainsSeries.push(0);} 
     else { mainsWater += (houseConsumption - level); houseRain += level; houseMains += (houseConsumption - level); mainsSeries.push(houseConsumption - level); level = 0; }
 
-    // Bewässerung
     let irrigationToday = 0;
     if(isIrrigationSeason(r.time)){
       const m=r.time.getMonth()+1; const warmEnough = (m===4||m===9) ? (r.tmax>=aprilSeptMin) : true;
@@ -322,13 +290,9 @@ function simulate({ cisternVolume, roofArea, roofCoeff, houseConsumption, garden
     }
     if(irrigationToday>0){ irrDemand += irrigationToday; totalDemand += irrigationToday; if(level>=irrigationToday){ level -= irrigationToday; rainSupplied += irrigationToday; irrRain += irrigationToday; } else { mainsWater += (irrigationToday - level); irrRain += level; irrMains += (irrigationToday - level); mainsSeries[mainsSeries.length-1] += (irrigationToday - level); level = 0; } }
 
-    labels.push(r.time.toISOString().slice(0,10));
-    lvlSeries.push(level); rainSeries.push(r.rr);
-    if(showTmax) tmaxSeries.push(isNaN(r.tmax)? null : r.tmax);
+    labels.push(r.time.toISOString().slice(0,10)); lvlSeries.push(level); rainSeries.push(r.rr); if(showTmax) tmaxSeries.push(isNaN(r.tmax)? null : r.tmax);
   }
-  const rainPct = totalDemand>0? (rainSupplied/totalDemand*100):0;
-  const mainsPct = totalDemand>0? (mainsWater/totalDemand*100):0;
-  const overflowPctOfRain = totalInflow>0 ? (overflow/totalInflow*100) : 0;
+  const rainPct = totalDemand>0? (rainSupplied/totalDemand*100):0; const mainsPct = totalDemand>0? (mainsWater/totalDemand*100):0; const overflowPctOfRain = totalInflow>0 ? (overflow/totalInflow*100) : 0;
   return { labels, lvlSeries, rainSeries, mainsSeries, tmaxSeries, rainSupplied, mainsWater, overflow, totalInflow, totalDemand, rainPct, mainsPct, overflowPctOfRain, houseDemand, irrDemand, houseRain, houseMains, irrRain, irrMains };
 }
 
@@ -350,10 +314,8 @@ function yearlyBreakdown(rows){
   for(let i=0;i<loadedRows.length;i++){
     const r=loadedRows[i]; const y=r.time.getFullYear();
     let inflow = r.rr * roofArea * roofCoeff; level += inflow; if(level>parseFloat(document.getElementById('cisternVolume').value)){ add(y,'overflow', level - parseFloat(document.getElementById('cisternVolume').value)); level = parseFloat(document.getElementById('cisternVolume').value); }
-    // house
     add(y,'demand',houseConsumption); add(y,'house',houseConsumption);
     if(level>=houseConsumption){ level -= houseConsumption; add(y,'rain',houseConsumption);} else { add(y,'rain',level); add(y,'mains',houseConsumption - level); level=0; }
-    // irrigation
     let irrigationToday=0; if(isIrrigationSeason(r.time)){
       const m=r.time.getMonth()+1; const warmEnough=(m===4||m===9)? (r.tmax>=aprilSeptMin):true; const W=W_from_Tmax(r.tmax,W30,W25,W20); const W_eff= warmEnough? W:0; if(W_eff>0){ const r1=(i-1>=0)? reff[i-1]:0; const r3=reff.slice(Math.max(0,i-3), i).reduce((a,b)=>a+b,0); if(r1<W_eff && r3<2*W_eff) irrigationToday=W_eff*gardenArea; } }
     if(irrigationToday>0){ add(y,'demand',irrigationToday); add(y,'irrig',irrigationToday); if(level>=irrigationToday){ level-=irrigationToday; add(y,'rain',irrigationToday);} else { add(y,'rain',level); add(y,'mains',irrigationToday - level); level=0; } }
@@ -362,40 +324,17 @@ function yearlyBreakdown(rows){
 }
 
 function renderMainCharts(sim, capacity, showTmax){
-  const ctx = document.getElementById('cisternChart').getContext('2d');
-  if(levelChart) levelChart.destroy();
+  const ctx = document.getElementById('cisternChart').getContext('2d'); if(levelChart) levelChart.destroy();
   const datasets = [
     { label:'Zisternenfüllstand (L)', data: sim.lvlSeries, borderColor:'#38bdf8', backgroundColor:'rgba(56,189,248,0.18)', fill:true, yAxisID:'yC' },
     { label:'Niederschlag (mm)', data: sim.rainSeries, type:'bar', backgroundColor:'rgba(34,197,94,0.45)', borderColor:'rgba(34,197,94,1)', yAxisID:'yR' },
     { label:'Trinkwasser (L)', data: sim.mainsSeries, type:'bar', backgroundColor:'rgba(239,68,68,0.45)', borderColor:'rgba(239,68,68,1)', yAxisID:'yM' }
   ];
   if(showTmax){ datasets.push({ label:'Tmax (°C)', data: sim.tmaxSeries, type:'line', borderColor:'#f59e0b', yAxisID:'yT', spanGaps:true }); }
+  levelChart = new Chart(ctx, { type:'line', data:{ labels: sim.labels, datasets }, options:{ animation:false, maintainAspectRatio:false, interaction:{mode:'index', intersect:false}, scales:{ x:{ticks:{color:axisColor}, grid:{color:gridColor}}, yC:{position:'left', beginAtZero:true, max:capacity, title:{display:true, text:'Zisterne (L)', color:axisColor}, ticks:{color:axisColor}, grid:{color:gridColor}}, yR:{position:'right', beginAtZero:true, grid:{drawOnChartArea:false, color:gridColor}, title:{display:true, text:'Niederschlag (mm)', color:axisColor}, ticks:{color:axisColor}}, yM:{position:'right', beginAtZero:true, grid:{drawOnChartArea:false, color:gridColor}, title:{display:true, text:'Trinkwasser (L)', color:axisColor}, ticks:{color:axisColor}, suggestedMax: Math.max(100, Math.ceil((Math.max(0,...sim.mainsSeries)+1)/100)*100)}, yT:{position:'right', beginAtZero:false, grid:{drawOnChartArea:false, color:gridColor}, title:{display:true, text:'°C', color:axisColor}, ticks:{color:axisColor}, display: showTmax} }, plugins:{ zoom:{ zoom:{wheel:{enabled:true}, pinch:{enabled:true}, mode:'x'}, pan:{enabled:true, mode:'x'} }, legend:{labels:{color:axisColor}} } } });
 
-  levelChart = new Chart(ctx, {
-    type:'line',
-    data:{ labels: sim.labels, datasets },
-    options:{
-      animation:false,
-      maintainAspectRatio:false,
-      interaction:{mode:'index', intersect:false},
-      scales:{
-        x:{ticks:{color:axisColor}, grid:{color:gridColor}},
-        yC:{position:'left', beginAtZero:true, max:capacity, title:{display:true, text:'Zisterne (L)', color:axisColor}, ticks:{color:axisColor}, grid:{color:gridColor}},
-        yR:{position:'right', beginAtZero:true, grid:{drawOnChartArea:false, color:gridColor}, title:{display:true, text:'Niederschlag (mm)', color:axisColor}, ticks:{color:axisColor}},
-        yM:{position:'right', beginAtZero:true, grid:{drawOnChartArea:false, color:gridColor}, title:{display:true, text:'Trinkwasser (L)', color:axisColor}, ticks:{color:axisColor}, suggestedMax: Math.max(100, Math.ceil((Math.max(0,...sim.mainsSeries)+1)/100)*100)},
-        yT:{position:'right', beginAtZero:false, grid:{drawOnChartArea:false, color:gridColor}, title:{display:true, text:'°C', color:axisColor}, ticks:{color:axisColor}, display: showTmax}
-      },
-      plugins:{ zoom:{ zoom:{wheel:{enabled:true}, pinch:{enabled:true}, mode:'x'}, pan:{enabled:true, mode:'x'} }, legend:{labels:{color:axisColor}} }
-    }
-  });
-
-  const pctx = document.getElementById('pieChart').getContext('2d');
-  if(pieChart) pieChart.destroy();
-  pieChart = new Chart(pctx, {
-    type:'doughnut',
-    data:{ labels:['Regenwasser genutzt','Trinkwasser'], datasets:[{ data:[sim.rainSupplied, sim.mainsWater], backgroundColor:['#22c55e','#ef4444'] }] },
-    options:{ animation:false, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{color:axisColor} } } }
-  });
+  const pctx = document.getElementById('pieChart').getContext('2d'); if(pieChart) pieChart.destroy();
+  pieChart = new Chart(pctx, { type:'doughnut', data:{ labels:['Regenwasser genutzt','Trinkwasser'], datasets:[{ data:[sim.rainSupplied, sim.mainsWater], backgroundColor:['#22c55e','#ef4444'] }] }, options:{ animation:false, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{color:axisColor} } } } });
 }
 
 function renderResults(sim, rangeText){
@@ -413,28 +352,16 @@ function renderResults(sim, rangeText){
 }
 
 function renderYearly(){
-  const yearly = yearlyBreakdown(loadedRows);
-  const el = document.getElementById('yearly');
+  const yearly = yearlyBreakdown(loadedRows); const el = document.getElementById('yearly');
   if(!yearly.length){ el.innerHTML=''; return; }
   let html = '<h4>Jährliche Auswertung</h4><table><thead><tr><th>Jahr</th><th>Nachfrage (L)</th><th>Haus (L)</th><th>Bewässerung (L)</th><th>Regen genutzt (L)</th><th>Trinkwasser (L)</th><th>Überlauf (L)</th><th>Nutzungsgrad (%)</th></tr></thead><tbody>';
-  for(const y of yearly){
-    html += `<tr><td>${y.year}</td><td>${y.demand.toFixed(0)}</td><td>${y.house.toFixed(0)}</td><td>${y.irrig.toFixed(0)}</td><td>${y.rain.toFixed(0)}</td><td>${y.mains.toFixed(0)}</td><td>${y.overflow? y.overflow.toFixed(0):'-'}</td><td>${y.rainPct.toFixed(1)}</td></tr>`;
-  }
-  html += '</tbody></table>';
-  el.innerHTML = html;
+  for(const y of yearly){ html += `<tr><td>${y.year}</td><td>${y.demand.toFixed(0)}</td><td>${y.house.toFixed(0)}</td><td>${y.irrig.toFixed(0)}</td><td>${y.rain.toFixed(0)}</td><td>${y.mains.toFixed(0)}</td><td>${y.overflow? y.overflow.toFixed(0):'-'}</td><td>${y.rainPct.toFixed(1)}</td></tr>`; }
+  html += '</tbody></table>'; el.innerHTML = html;
 }
 
 function renderOptChart(points){
-  const ctx = document.getElementById('optChart').getContext('2d');
-  if(optChart) optChart.destroy();
-  optChart = new Chart(ctx, {
-    type:'line',
-    data:{ labels: points.map(p=>p.volume), datasets:[
-      { label:'Nutzungsgrad Regenwasser (%)', data: points.map(p=>p.coverage), borderColor:'#3b82f6', backgroundColor:'rgba(59,130,246,0.15)', fill:true, tension:0.12, yAxisID:'y1' },
-      { label:'Überlauf (L)', data: points.map(p=>p.overflow), borderColor:'#f87171', backgroundColor:'rgba(248,113,113,0.15)', fill:true, tension:0.12, yAxisID:'y2' }
-    ] },
-    options:{ animation:false, maintainAspectRatio:false, scales:{ x:{ title:{display:true, text:'Zisternenvolumen (L)', color:axisColor}, ticks:{color:axisColor}, grid:{color:gridColor}}, y1:{ beginAtZero:true, max:100, title:{display:true, text:'Nutzungsgrad (%)', color:axisColor}, ticks:{color:axisColor}, grid:{color:gridColor} }, y2:{ beginAtZero:true, title:{display:true, text:'Überlauf (L)', color:axisColor}, ticks:{color:axisColor}, position:'right', grid:{drawOnChartArea:false, color:gridColor} } }, plugins:{legend:{labels:{color:axisColor}}} }
-  });
+  const ctx = document.getElementById('optChart').getContext('2d'); if(optChart) optChart.destroy();
+  optChart = new Chart(ctx, { type:'line', data:{ labels: points.map(p=>p.volume), datasets:[ { label:'Nutzungsgrad Regenwasser (%)', data: points.map(p=>p.coverage), borderColor:'#3b82f6', backgroundColor:'rgba(59,130,246,0.15)', fill:true, tension:0.12, yAxisID:'y1' }, { label:'Überlauf (L)', data: points.map(p=>p.overflow), borderColor:'#f87171', backgroundColor:'rgba(248,113,113,0.15)', fill:true, tension:0.12, yAxisID:'y2' } ] }, options:{ animation:false, maintainAspectRatio:false, scales:{ x:{ title:{display:true, text:'Zisternenvolumen (L)', color:axisColor}, ticks:{color:axisColor}, grid:{color:gridColor}}, y1:{ beginAtZero:true, max:100, title:{display:true, text:'Nutzungsgrad (%)', color:axisColor}, ticks:{color:axisColor}, grid:{color:gridColor} }, y2:{ beginAtZero:true, title:{display:true, text:'Überlauf (L)', color:axisColor}, ticks:{color:axisColor}, position:'right', grid:{drawOnChartArea:false, color:gridColor} } }, plugins:{legend:{labels:{color:axisColor}}} } });
 }
 
 function filterByDate(rows, startDate, endDate){ return rows.filter(r=>(!startDate||r.time>=startDate)&&(!endDate||r.time<=endDate)); }
@@ -484,83 +411,55 @@ function optimizeFromUI(){
   const points=[]; let prev=null;
   for(let vol=1000; vol<=20000; vol+=500){
     const res = simulate({ cisternVolume: vol, roofArea, roofCoeff, houseConsumption, gardenArea, W30, W25, W20, aprilSeptMin, effLoss, effCap, rows:data, showTmax:false });
-    const coverage = res.rainPct;
-    points.push({volume:vol, coverage, overflow: res.overflow});
-    if(prev!==null){ const delta = coverage - prev; if(delta < 0.3){ break; } }
-    prev = coverage;
+    const coverage = res.rainPct; points.push({volume:vol, coverage, overflow: res.overflow});
+    if(prev!==null){ const delta = coverage - prev; if(delta < 0.3){ break; } } prev = coverage;
   }
   renderOptChart(points);
 }
 
 function debounce(fn, ms){ let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), ms); } }
 
-// Tabs
 for(const el of document.querySelectorAll('.tab')){
-  el.addEventListener('click', ()=>{
-    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-    el.classList.add('active');
-    document.getElementById(el.dataset.tab).classList.add('active');
-    setTimeout(()=>{ if(levelChart) levelChart.resize(); if(optChart) optChart.resize(); }, 50);
-  })
+  el.addEventListener('click', ()=>{ document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); el.classList.add('active'); document.getElementById(el.dataset.tab).classList.add('active'); setTimeout(()=>{ if(levelChart) levelChart.resize(); if(optChart) optChart.resize(); }, 50); })
 }
 
-// Auto save inputs
-document.querySelectorAll('.controls input, .controls select').forEach(el=>{
-  el.addEventListener('input', ()=>{ saveState(); autoRun(); });
-  el.addEventListener('change', ()=>{ saveState(); autoRun(); });
-});
+document.querySelectorAll('.controls input, .controls select').forEach(el=>{ el.addEventListener('input', ()=>{ saveState(); autoRun(); }); el.addEventListener('change', ()=>{ saveState(); autoRun(); }); });
 
-// CSV export helpers
-function downloadFile(filename, text){
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([text], {type:'text/csv'}));
-  a.download = filename; a.click(); URL.revokeObjectURL(a.href);
-}
+function downloadFile(filename, text){ const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], {type:'text/csv'})); a.download = filename; a.click(); URL.revokeObjectURL(a.href); }
 
-document.getElementById('exportSeries').addEventListener('click', ()=>{
-  if(!lastSim){ alert('Bitte zuerst simulieren.'); return; }
-  const { sim, data } = lastSim;
-  let csv = 'date,rr_mm,cistern_L,mains_L\n';
-  for(let i=0;i<data.length;i++){
-    csv += `${data[i].time.toISOString().slice(0,10)},${sim.rainSeries[i]},${sim.lvlSeries[i]},${sim.mainsSeries[i]}\n`;
-  }
-  downloadFile('zisternograph_serie.csv', csv);
-});
+document.getElementById('exportSeries').addEventListener('click', ()=>{ if(!lastSim){ alert('Bitte zuerst simulieren.'); return; } const { sim, data } = lastSim; let csv = 'date,rr_mm,cistern_L,mains_L\n'; for(let i=0;i<data.length;i++){ csv += `${data[i].time.toISOString().slice(0,10)},${sim.rainSeries[i]},${sim.lvlSeries[i]},${sim.mainsSeries[i]}\n`; } downloadFile('zisternograph_serie.csv', csv); });
 
-document.getElementById('exportYearly').addEventListener('click', ()=>{
-  const yearly = yearlyBreakdown(loadedRows); if(!yearly.length){ alert('Keine Daten.'); return; }
-  let csv = 'year,demand_L,house_L,irrig_L,rain_L,mains_L,overflow_L,util_%\n';
-  for(const y of yearly){ csv += `${y.year},${y.demand},${y.house},${y.irrig},${y.rain},${y.mains},${y.overflow||0},${y.rainPct}\n`; }
-  downloadFile('zisternograph_jahreswerte.csv', csv);
-});
+document.getElementById('exportYearly').addEventListener('click', ()=>{ const yearly = yearlyBreakdown(loadedRows); if(!yearly.length){ alert('Keine Daten.'); return; } let csv = 'year,demand_L,house_L,irrig_L,rain_L,mains_L,overflow_L,util_%\n'; for(const y of yearly){ csv += `${y.year},${y.demand},${y.house},${y.irrig},${y.rain},${y.mains},${y.overflow||0},${y.rainPct}\n`; } downloadFile('zisternograph_jahreswerte.csv', csv); });
 
-// Load CSV
 function loadCSVAndInit(){
-  const file = document.getElementById('csvFile').files[0];
-  if(!file){ alert('Bitte CSV-Datei auswählen.'); return; }
-  const fr=new FileReader();
-  fr.onload = e => { try{ 
-      loadedRows = parseCSV(e.target.result);
-      if(!loadedRows.length){ alert('Keine Daten in CSV.'); return; }
-      const minD = loadedRows[0].time; const maxD = loadedRows[loadedRows.length-1].time;
-      const s = document.getElementById('startDate'); const ed = document.getElementById('endDate');
-      s.value = minD.toISOString().slice(0,10); ed.value = maxD.toISOString().slice(0,10);
-      saveState();
-      runSimulationFromUI(); optimizeFromUI();
-    }catch(err){ const box=document.getElementById('errorBox'); box.style.display='block'; box.textContent = err.message; } };
-  fr.readAsText(file);
+  const file = document.getElementById('csvFile').files[0]; if(!file){ alert('Bitte CSV-Datei auswählen.'); return; }
+  const fr=new FileReader(); fr.onload = e => { try{ loadedRows = parseCSV(e.target.result); if(!loadedRows.length){ alert('Keine Daten in CSV.'); return; } const minD = loadedRows[0].time; const maxD = loadedRows[loadedRows.length-1].time; const s = document.getElementById('startDate'); const ed = document.getElementById('endDate'); s.value = minD.toISOString().slice(0,10); ed.value = maxD.toISOString().slice(0,10); saveState(); runSimulationFromUI(); optimizeFromUI(); }catch(err){ const box=document.getElementById('errorBox'); box.style.display='block'; box.textContent = err.message; } }; fr.readAsText(file);
 }
-
-// Auto-run
-const autoRun = debounce(()=>{ if(loadedRows){ runSimulationFromUI(); optimizeFromUI(); } }, 150);
 
 document.getElementById('csvFile').addEventListener('change', ()=> loadCSVAndInit());
 
-// Init state
+const autoRun = debounce(()=>{ if(loadedRows){ runSimulationFromUI(); optimizeFromUI(); } }, 150);
+
 loadState();
 
-// Responsive resize
+// --- Demo-CSV Auto-Preload für GitHub Pages ---
+async function tryLoadDemo(){
+  try{
+    const resp = await fetch('./demo.csv', {cache:'no-store'});
+    if(!resp.ok) return; // keine demo.csv vorhanden
+    const text = await resp.text();
+    const data = parseCSV(text);
+    if(!data.length) return;
+    loadedRows = data;
+    const minD = loadedRows[0].time; const maxD = loadedRows[loadedRows.length-1].time;
+    const s = document.getElementById('startDate'); const ed = document.getElementById('endDate');
+    if(!s.value) s.value = minD.toISOString().slice(0,10); if(!ed.value) ed.value = maxD.toISOString().slice(0,10);
+    runSimulationFromUI(); optimizeFromUI();
+  }catch(e){ /* still fine without demo */ }
+}
+
+tryLoadDemo();
+
 window.addEventListener('resize', ()=>{ if(levelChart) levelChart.resize(); if(optChart) optChart.resize(); if(pieChart) pieChart.resize(); });
 </script>
 </body>
